@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MyRESTServices.BLL.DTOs;
 using MyRESTServices.BLL.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MyRESTServices.Controllers
 {
@@ -9,22 +12,23 @@ namespace MyRESTServices.Controllers
     public class CategoriesController : ControllerBase
     {
         private readonly ICategoryBLL _categoryBLL;
+
         public CategoriesController(ICategoryBLL categoryBLL)
         {
-            _categoryBLL = categoryBLL;
+            _categoryBLL = categoryBLL ?? throw new ArgumentNullException(nameof(categoryBLL));
         }
 
         [HttpGet]
-        public async Task<IEnumerable<CategoryDTO>> Get()
+        public async Task<ActionResult<IEnumerable<CategoryDTO>>> Get()
         {
             var results = await _categoryBLL.GetAll();
-            return results;
+            return Ok(results);
         }
 
         [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        public async Task<ActionResult<CategoryDTO>> Get(int id)
         {
-            var result = _categoryBLL.GetById(id);
+            var result = await _categoryBLL.GetById(id);
             if (result == null)
             {
                 return NotFound();
@@ -32,8 +36,22 @@ namespace MyRESTServices.Controllers
             return Ok(result);
         }
 
+        [HttpGet("paged")]
+        public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetWithPaging(int pageNumber = 1, int pageSize = 10, string name = null)
+        {
+            try
+            {
+                var results = await _categoryBLL.GetWithPaging(pageNumber, pageSize, name);
+                return Ok(results);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost]
-        public IActionResult Post(CategoryCreateDTO categoryCreateDTO)
+        public async Task<ActionResult<CategoryDTO>> Post(CategoryCreateDTO categoryCreateDTO)
         {
             if (categoryCreateDTO == null)
             {
@@ -42,8 +60,8 @@ namespace MyRESTServices.Controllers
 
             try
             {
-                _categoryBLL.Insert(categoryCreateDTO);
-                return Ok("Insert data success");
+                var result = await _categoryBLL.Insert(categoryCreateDTO);
+                return CreatedAtAction(nameof(Get), null, result);
             }
             catch (Exception ex)
             {
@@ -52,35 +70,27 @@ namespace MyRESTServices.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Put(int id, CategoryUpdateDTO categoryUpdateDTO)
+        public async Task<IActionResult> Put(int id, CategoryUpdateDTO categoryUpdateDTO)
         {
-            if (_categoryBLL.GetById(id) == null)
+            var result = await _categoryBLL.Update(new CategoryUpdateDTO { CategoryId = id, CategoryName = categoryUpdateDTO.CategoryName });
+            if (result == null)
             {
                 return NotFound();
             }
-
-            try
-            {
-                _categoryBLL.Update(categoryUpdateDTO);
-                return Ok("Update data success");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return Ok("Update data success");
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            if (_categoryBLL.GetById(id) == null)
+            if (await _categoryBLL.GetById(id) == null)
             {
                 return NotFound();
             }
 
             try
             {
-                _categoryBLL.Delete(id);
+                await _categoryBLL.Delete(id);
                 return Ok("Delete data success");
             }
             catch (Exception ex)

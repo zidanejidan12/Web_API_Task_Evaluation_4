@@ -2,6 +2,11 @@
 using MyRESTServices.BLL.DTOs;
 using MyRESTServices.BLL.Interfaces;
 using MyRESTServices.Data.Interfaces;
+using MyRESTServices.Domain.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MyRESTServices.BLL
 {
@@ -12,50 +17,76 @@ namespace MyRESTServices.BLL
 
         public CategoryBLL(ICategoryData categoryData, IMapper mapper)
         {
-            _categoryData = categoryData;
-            _mapper = mapper;
+            _categoryData = categoryData ?? throw new ArgumentNullException(nameof(categoryData));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        public Task<bool> Delete(int id)
+        public async Task<bool> Delete(int id)
         {
-            throw new NotImplementedException();
+            return await _categoryData.Delete(id);
         }
 
         public async Task<IEnumerable<CategoryDTO>> GetAll()
         {
             var categories = await _categoryData.GetAll();
-            var categoriesDto = _mapper.Map<IEnumerable<CategoryDTO>>(categories);
-            return categoriesDto;
+            return _mapper.Map<IEnumerable<CategoryDTO>>(categories);
         }
 
-        public Task<CategoryDTO> GetById(int id)
+        public async Task<CategoryDTO> GetById(int id)
         {
-            throw new NotImplementedException();
+            var category = await _categoryData.GetById(id);
+            return _mapper.Map<CategoryDTO>(category);
         }
 
-        public Task<IEnumerable<CategoryDTO>> GetByName(string name)
+        public async Task<IEnumerable<CategoryDTO>> GetByName(string name)
         {
-            throw new NotImplementedException();
+            var categories = await _categoryData.GetByName(name);
+            return _mapper.Map<IEnumerable<CategoryDTO>>(categories);
         }
 
-        public Task<int> GetCountCategories(string name)
+        public async Task<int> GetCountCategories(string name)
         {
-            throw new NotImplementedException();
+            return await _categoryData.GetCountCategories(name);
         }
 
-        public Task<IEnumerable<CategoryDTO>> GetWithPaging(int pageNumber, int pageSize, string name)
+        public async Task<IEnumerable<CategoryDTO>> GetWithPaging(int pageNumber, int pageSize, string name)
         {
-            throw new NotImplementedException();
+            var categories = await _categoryData.GetWithPaging(pageNumber, pageSize, name);
+            return _mapper.Map<IEnumerable<CategoryDTO>>(categories);
         }
 
-        public Task<CategoryDTO> Insert(CategoryCreateDTO entity)
+        public async Task<CategoryDTO> Insert(CategoryCreateDTO entity)
         {
-            throw new NotImplementedException();
+            var category = _mapper.Map<Category>(entity);
+            var insertedCategory = await _categoryData.Insert(category);
+            return _mapper.Map<CategoryDTO>(insertedCategory);
         }
 
-        public Task<CategoryDTO> Update(CategoryUpdateDTO entity)
+        public async Task<CategoryDTO> Update(CategoryUpdateDTO entity)
         {
-            throw new NotImplementedException();
+            var existingCategory = await _categoryData.GetById(entity.CategoryId);
+            if (existingCategory == null)
+                return null;
+
+            // Check if the updated name is the same as the existing name
+            if (existingCategory.CategoryName != entity.CategoryName)
+            {
+                // Check if the new name conflicts with any existing category
+                var existingCategoryWithSameName = await _categoryData.GetByName(entity.CategoryName);
+                if (existingCategoryWithSameName.Any())
+                {
+                    // Handle case where the new name conflicts with an existing category
+                    return null; // Or throw an exception indicating name conflict
+                }
+            }
+
+            // Update the name
+            existingCategory.CategoryName = entity.CategoryName;
+
+            // Perform the update in the data layer
+            var updatedCategory = await _categoryData.Update(entity.CategoryId, existingCategory); // Pass both id and updated entity
+
+            return _mapper.Map<CategoryDTO>(updatedCategory);
         }
     }
 }
