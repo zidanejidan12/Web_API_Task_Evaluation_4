@@ -35,7 +35,9 @@ namespace MyRESTServices.Data
 
         public async Task<Article> GetById(int id)
         {
-            return await _context.Articles.FindAsync(id);
+            return await _context.Articles
+                .Include(a => a.Category)
+                .FirstOrDefaultAsync(a => a.ArticleId == id);
         }
 
         public async Task<int> GetCountArticles()
