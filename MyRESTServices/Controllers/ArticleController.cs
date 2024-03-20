@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using MyRESTServices.BLL.DTOs;
 using MyRESTServices.BLL.Interfaces;
+using MyRESTServices.Helpers; // Import the namespace containing Extensions
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -85,9 +87,10 @@ namespace MyRESTServices.Controllers
                 var articles = await _articleBLL.GetWithPaging(categoryId, pageNumber, pageSize);
                 return Ok(articles);
             }
-            catch (Exception ex)
+            catch (ValidationException ex) // Catching ValidationException instead of Exception
             {
-                return BadRequest(ex.Message);
+                ex.Errors.AddToModelState(ModelState); // Use the AddToModelState extension method
+                return BadRequest(ModelState);
             }
         }
     }

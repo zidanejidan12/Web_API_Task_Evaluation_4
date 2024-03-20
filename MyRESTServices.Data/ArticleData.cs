@@ -47,6 +47,7 @@ namespace MyRESTServices.Data
         {
             return await _context.Articles
                 .Where(a => a.CategoryId == categoryId)
+                .Include(a => a.Category)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -59,7 +60,7 @@ namespace MyRESTServices.Data
 
         public async Task<IEnumerable<Article>> GetArticleByCategory(int categoryId)
         {
-            return await _context.Articles.Where(a => a.CategoryId == categoryId).ToListAsync();
+            return await _context.Articles.Where(a => a.CategoryId == categoryId).Include(a => a.Category).ToListAsync();
         }
 
         public async Task<int> InsertWithIdentity(Article article)
