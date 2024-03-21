@@ -11,7 +11,8 @@
             </div>
             <div class="card-body">
                 @Html.Raw(ViewData["message"])
-                <form asp-action="Edit">
+                @using (Html.BeginForm("Edit", "Categories", FormMethod.Post))
+                {
                     <div class="form-group">
                         <label for="CategoryID">Category ID :</label>
                         <input type="text" class="form-control" name="CategoryID" readonly value="@Model.CategoryID" />
@@ -23,10 +24,8 @@
                     <div class="form-group">
                         <input type="Submit" class="btn btn-success btn-sm" value="Edit" />
                     </div>
-                </form>
+                }
             </div>
         </div>
-
     </div>
-
 </div>

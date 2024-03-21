@@ -1,0 +1,23 @@
+﻿@model IEnumerable<CategoryDTO>
+
+<h1>Categories</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <!-- Add other category properties as needed -->
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var category in Model)
+        {
+            <tr>
+                <td>@category.CategoryID</td>
+                <td>@category.CategoryName</td>
+                <!-- Render other category properties here -->
+            </tr>
+        }
+    </tbody>
+</table>
