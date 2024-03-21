@@ -17,21 +17,44 @@ namespace SampleMVC.Controllers
             _categoryServices = categoryServices ?? throw new ArgumentNullException(nameof(categoryServices));
         }
 
-        // GET: Categories
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? pageNumber, int? pageSize, string name)
         {
             try
             {
-                // Get all categories
-                var categories = await _categoryServices.GetAll();
+                // Ensure pageNumber and pageSize are valid
+                pageNumber = pageNumber.HasValue && pageNumber > 0 ? pageNumber : 1;
+                pageSize = pageSize.HasValue && pageSize > 0 ? pageSize : 10;
 
-                // Populate other properties of the view model
-                var viewModel = new CategoriesViewModel
+                // Check if pagination parameters are provided
+                if (!string.IsNullOrWhiteSpace(name) || pageNumber.HasValue)
                 {
-                    Categories = categories
-                };
+                    // Get categories with pagination
+                    var categories = await _categoryServices.GetWithPaging(pageNumber.Value, pageSize.Value, name);
 
-                return View(viewModel);
+                    // Populate other properties of the view model
+                    var viewModel = new CategoriesViewModel
+                    {
+                        Categories = categories,
+                        PageNumber = pageNumber.Value,
+                        PageSize = pageSize.Value,
+                        Name = name
+                    };
+
+                    return View(viewModel);
+                }
+                else
+                {
+                    // Get all categories
+                    var categories = await _categoryServices.GetAll();
+
+                    // Populate other properties of the view model
+                    var viewModel = new CategoriesViewModel
+                    {
+                        Categories = categories
+                    };
+
+                    return View(viewModel);
+                }
             }
             catch (Exception)
             {
@@ -124,7 +147,11 @@ namespace SampleMVC.Controllers
         public async Task<IActionResult> GetWithPaging(int pageNumber = 1, int pageSize = 10, string name = null)
         {
             var categories = await _categoryServices.GetWithPaging(pageNumber, pageSize, name);
-            return View(categories);
+            var viewModel = new CategoriesViewModel
+            {
+                Categories = categories
+            };
+            return View(viewModel);
         }
     }
 }
