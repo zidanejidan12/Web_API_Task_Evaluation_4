@@ -11,5 +11,6 @@ namespace MyRESTServices.BusinessLogic.Interfaces
         Task<User> Login(string username, string password);
         Task<bool> ChangePassword(string username, string newPassword);
         Task<User> RegisterUser(User newUser);
+        Task<User> GetUserWithRoles(string username);
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MyRESTServices.BLL.DTOs;
 using MyRESTServices.BLL.Interfaces;
 using System;
@@ -81,6 +82,7 @@ namespace MyRESTServices.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")] // Restrict access to users with the "admin" role
         public async Task<IActionResult> Delete(int id)
         {
             if (await _categoryBLL.GetById(id) == null)
@@ -100,3 +102,4 @@ namespace MyRESTServices.Controllers
         }
     }
 }
+

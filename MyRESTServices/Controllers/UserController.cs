@@ -33,14 +33,24 @@ namespace MyRESTServices.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
         {
-            var user = await _userBLL.Login(loginDTO.Username, loginDTO.Password);
+            var user = await _userBLL.GetUserWithRoles(loginDTO.Username); // Retrieve user with roles
             if (user == null)
             {
                 return Unauthorized();
             }
 
-            var token = _jwtHelper.GenerateJwtToken(user); // Use JwtHelper for token generation
-            return Ok(new { Token = token });
+            var roles = user.Roles.Select(r => r.RoleName); // Assuming Roles is a collection of role names
+            var token = _jwtHelper.GenerateJwtToken(user, roles); // Generate JWT token
+
+            // Create an anonymous object with token, username, and roles to return in the response
+            var response = new
+            {
+                Token = token,
+                Username = user.Username,
+                Roles = roles
+            };
+
+            return Ok(response);
         }
 
         [HttpPost("changepassword")]

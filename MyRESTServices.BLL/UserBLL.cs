@@ -41,5 +41,10 @@ namespace MyRESTServices.BusinessLogic.Implementations
         {
             throw new NotImplementedException();
         }
+
+        public async Task<User> GetUserWithRoles(string username)
+        {
+            return await _userData.GetUserWithRoles(username);
+        }
     }
 }
