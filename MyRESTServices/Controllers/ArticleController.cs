@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MyRESTServices.BLL.DTOs;
 using MyRESTServices.BLL.Interfaces;
-using MyRESTServices.Helpers; // Import the namespace containing Extensions
+using MyRESTServices.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
